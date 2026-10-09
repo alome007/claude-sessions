@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "claude-sessions"
+version = "1.0.0"
+description = "Search your Claude Code sessions and read your plans in the browser."
+requires-python = ">=3.9"
+license = { text = "MIT" }
+dependencies = []
+
+[project.scripts]
+claude-sessions = "claude_sessions.__main__:main"
+
+[tool.setuptools.packages.find]
+include = ["claude_sessions*"]
+
+[tool.setuptools.package-data]
+"claude_sessions.server" = ["static/*.html", "static/*.css", "static/js/*.js"]

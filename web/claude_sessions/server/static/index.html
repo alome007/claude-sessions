@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Claude Sessions</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body data-mode="sessions">
+  <div class="window">
+    <aside class="sidebar glass" id="sidebar" aria-label="Projects">
+      <nav id="projects" class="scroll"></nav>
+      <div class="seg" id="modes" role="group" aria-label="Show">
+        <button data-mode="sessions" aria-pressed="true">Sessions</button><button data-mode="plans" aria-pressed="false">Plans</button>
+      </div>
+    </aside>
+    <div class="content">
+      <header class="toolbar" id="toolbar">
+        <button class="icon glass" id="sideToggle" aria-label="Toggle sidebar" title="Toggle sidebar">
+          <svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="2.5" width="13" height="11" rx="2.5"/><path d="M6 2.5v11"/></svg>
+        </button>
+        <div class="titles">
+          <h1>Claude Sessions</h1>
+          <p id="subtitle" aria-live="polite">Indexing transcripts...</p>
+        </div>
+        <label class="search glass">
+          <svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.75"/><path d="m10.5 10.5 3.5 3.5"/></svg>
+          <input id="q" type="search" placeholder="Search conversations" autocomplete="off" spellcheck="false" aria-label="Search">
+        </label>
+        <div class="filters for-sessions">
+          <div class="seg glass" id="when" role="group" aria-label="Active">
+            <button data-back="" aria-pressed="true">Any day</button><button data-back="0" aria-pressed="false">Today</button><button data-back="1" aria-pressed="false">Yesterday</button><button data-back="6" aria-pressed="false">7 days</button>
+          </div>
+          <label class="pop glass">
+            <select id="role" aria-label="Who said it">
+              <option value="">Anyone said</option>
+              <option value="user">I said</option>
+              <option value="assistant">Claude said</option>
+            </select>
+          </label>
+          <label class="pop glass">
+            <select id="branch" aria-label="Branch">
+              <option value="">Any branch</option>
+            </select>
+          </label>
+          <label class="pop glass">
+            <select id="sort" aria-label="Sort">
+              <option value="relevance">Best match</option>
+              <option value="recent">Most recent</option>
+              <option value="hits">Most mentions</option>
+              <option value="longest">Longest</option>
+            </select>
+          </label>
+          <button class="icon glass" id="rebuild" aria-label="Rebuild index" title="Re-read every transcript from scratch">
+            <svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8.5a5 5 0 1 1-1.7-4.2"/><path d="M12 1.75V4.6H9.15"/></svg>
+          </button>
+        </div>
+      </header>
+      <main id="list" class="scroll for-sessions" role="listbox" aria-label="Sessions"></main>
+      <section class="split for-plans" id="plans">
+        <div id="planList" class="scroll" role="listbox" aria-label="Plans"></div>
+        <article id="reader">
+          <p id="readerEmpty">Select a plan to read it.</p>
+          <div id="readerBody" hidden>
+            <div class="rhead">
+              <button class="btn back" id="back">All plans</button>
+              <h2 id="rTitle"></h2>
+              <p id="rMeta"></p>
+              <div class="tools">
+                <button class="btn" id="pin" aria-pressed="false"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path class="head" d="M5.5 2h5M6.5 2v4.5L4 9.5h8L9.5 6.5V2"/><path d="M8 9.5v5"/></svg><span>Pin</span></button>
+                <label class="pop small">
+                  <select id="status" aria-label="Status">
+                    <option value="">No status</option>
+                    <option value="active">Active</option>
+                    <option value="completed">Completed</option>
+                  </select>
+                </label>
+                <label class="pop small"><select id="planProject" aria-label="Project"></select></label>
+                <button class="btn" id="openFile">Open in Editor</button>
+                <button class="btn" id="edit">Edit</button>
+                <button class="btn danger" id="del">Delete</button>
+              </div>
+              <input id="tags" placeholder="tags, comma separated" aria-label="Tags" autocomplete="off">
+            </div>
+            <div id="doc" class="md" tabindex="0"></div>
+            <textarea id="editor" hidden spellcheck="false" aria-label="Plan markdown"></textarea>
+            <p id="related" hidden></p>
+          </div>
+        </article>
+      </section>
+    </div>
+  </div>
+  <div class="menu glass" id="menu" role="menu" hidden></div>
+  <script type="module" src="/static/js/app.js"></script>
+</body>
+</html>

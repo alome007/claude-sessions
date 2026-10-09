@@ -4,7 +4,7 @@ Search every Claude Code conversation you've had, and read and organize the plan
 
 It comes in two forms that share the same data:
 
-- **A web version** that runs anywhere Python does, including macOS and Linux. It's one file and has no dependencies.
+- **A web version** that runs anywhere Python does, including macOS and Linux. It uses only Python's standard library.
 - **A native macOS app** built with AppKit.
 
 ![Sessions view](docs/sessions.png)
@@ -36,18 +36,23 @@ It comes in two forms that share the same data:
 
 ## Web version (macOS and Linux)
 
-You need Python 3.9 or later with SQLite's FTS5 full-text search. The Python from python.org, Homebrew, `uv` and most Linux distributions includes FTS5. There's nothing to install.
+You need Python 3.9 or later with SQLite's FTS5 full-text search. The Python from python.org, Homebrew, `uv` and most Linux distributions includes FTS5. There are no packages to install.
+
+Run it from a checkout:
 
 ```sh
-python3 claude_sessions.py
+cd web
+python3 -m claude_sessions
 ```
 
-It indexes your transcripts, then opens <http://localhost:8787> in your browser. Later runs only re-read transcripts that changed.
+Or install it as a `claude-sessions` command:
 
-| Option | What it does |
-|---|---|
-| `--reindex` | Rebuild the search index from scratch |
-| `--check` | Run the built-in self-check against sample data and exit |
+```sh
+pipx install ./web
+claude-sessions
+```
+
+It indexes your transcripts, then opens <http://localhost:8787> in your browser. Later runs only re-read transcripts that changed. Add `--reindex` to rebuild the search index from scratch.
 
 **Shortcuts** (on Linux, use Ctrl in place of ⌘):
 
@@ -93,7 +98,12 @@ Everything stays on your computer. The web version only listens on `127.0.0.1`. 
 
 ## Development
 
-Each version is a single file. `claude_sessions.py` is the server and page together, and `ClaudeSessions.swift` is the whole macOS app. Run `python3 claude_sessions.py --check` before sending changes.
+Run the web version's tests from `web/` before sending changes:
+
+```sh
+cd web
+python3 -m unittest
+```
 
 ## License
 
