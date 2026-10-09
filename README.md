@@ -113,7 +113,7 @@ macos/   The macOS app, a Swift package
 docs/    Screenshots and the data format both versions share
 ```
 
-Run both test suites before sending changes:
+Run both test suites before sending changes. The Swift tests use Swift Testing, which comes with Xcode 16 or later.
 
 ```sh
 cd web && python3 -m unittest
