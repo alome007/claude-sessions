@@ -1,4 +1,5 @@
 import AppKit
+import ClaudeSessionsCore
 
 enum Markdown {
 	static let body = NSFont.systemFont(ofSize: 13)
@@ -196,9 +197,9 @@ enum Markdown {
 				flush()
 				let label = String(text[text.index(after: cursor)..<close.lowerBound])
 				let target = String(text[close.upperBound..<end.lowerBound])
-				out.append(NSAttributedString(string: label, attributes: [
+				out.append(NSAttributedString(string: label, attributes: isWebLink(target) ? [
 					.font: font, .foregroundColor: NSColor.linkColor,
-					.link: target, .underlineStyle: NSUnderlineStyle.single.rawValue]))
+					.link: target, .underlineStyle: NSUnderlineStyle.single.rawValue] : plain))
 				cursor = end.upperBound
 			} else if text[cursor] == "*", let italic = take("*", "*") {
 				flush()

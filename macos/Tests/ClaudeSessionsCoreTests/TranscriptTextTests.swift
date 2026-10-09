@@ -39,3 +39,14 @@ struct TranscriptTextTests {
 		#expect(shellQuoted("/code/it's") == #"'/code/it'\''s'"#)
 	}
 }
+
+struct LinkTests {
+	@Test func onlyWebLinksAreOpened() {
+		#expect(isWebLink("https://example.com/docs"))
+		#expect(isWebLink("http://localhost:8787/"))
+		#expect(!isWebLink("file:///Applications/Utilities/Terminal.app"))
+		#expect(!isWebLink("x-apple.systempreferences:com.apple.preference.security"))
+		#expect(!isWebLink("javascript:alert(1)"))
+		#expect(!isWebLink("src/main.swift"))
+	}
+}
