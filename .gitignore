@@ -1,5 +1,9 @@
 __pycache__/
 *.pyc
+*.egg-info/
+build/
+.build/
+.swiftpm/
 .DS_Store
 *.db
 *.db-journal

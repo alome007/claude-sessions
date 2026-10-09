@@ -70,10 +70,11 @@ It indexes your transcripts, then opens <http://localhost:8787> in your browser.
 You need macOS 26 or later on Apple silicon, and the Xcode command line tools (`xcode-select --install`).
 
 ```sh
+cd macos
 ./build-app.sh
 ```
 
-This builds `Claude Sessions.app` and installs it in `/Applications`.
+This builds `Claude Sessions.app` with the Swift package tools and installs it in `/Applications`.
 
 ## Where your data lives
 
@@ -98,12 +99,28 @@ Everything stays on your computer. The web version only listens on `127.0.0.1`. 
 
 ## Development
 
-Run the web version's tests from `web/` before sending changes:
+```
+web/     The web version, a Python package
+  claude_sessions/    transcripts, index and sidecar read and write data; search, plans and
+                      projects hold the rules; app wires them together; server/ handles HTTP
+                      and serves the page from server/static/
+  tests/              unittest suites, including HTTP tests against a running server
+macos/   The macOS app, a Swift package
+  Sources/ClaudeSessionsCore/   the index, search and plan store, with no AppKit
+  Sources/ClaudeSessions/       the app: one controller per pane, coordinated by
+                                MainWindowController
+  Tests/ClaudeSessionsCoreTests/
+docs/    Screenshots and the data format both versions share
+```
+
+Run both test suites before sending changes:
 
 ```sh
-cd web
-python3 -m unittest
+cd web && python3 -m unittest
+cd macos && swift test
 ```
+
+Both versions read and write the same files, so a change to one usually needs the same change in the other. [docs/data-format.md](docs/data-format.md) describes those files.
 
 ## License
 
