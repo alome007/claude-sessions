@@ -8,6 +8,25 @@ func repoOf(_ path: String) -> String {
 	path.components(separatedBy: "/.claude/worktrees/")[0]
 }
 
+struct Needle {
+	static let newline = UInt8(ascii: "\n")
+	static let aiTitle = Needle("\"ai-title\"")
+	static let user = Needle("\"user\"")
+	static let assistant = Needle("\"assistant\"")
+	static let plans = Needle(".claude/plans/")
+	static let write = Needle("\"name\":\"Write\"")
+
+	let bytes: [UInt8]
+	init(_ text: String) { bytes = Array(text.utf8) }
+
+	func found(in data: Data) -> Bool {
+		data.withUnsafeBytes { raw in
+			guard let base = raw.baseAddress else { return false }
+			return memmem(base, raw.count, bytes, bytes.count) != nil
+		}
+	}
+}
+
 struct Session {
 	var id = "", title = "", project = "", branch = "", days = ""
 	var modified = 0.0, size = 0, turns = 0, hits = 0, snippet = ""
@@ -185,16 +204,14 @@ final class Index {
 		db.write("delete from msgs where sid = ?", [sid])
 		for url in urls.sorted(by: { $0.path < $1.path }) {
 			bytes += (try? url.resourceValues(forKeys: [.fileSizeKey]))?.fileSize ?? 0
-			guard let blob = try? String(contentsOf: url, encoding: .utf8) else { continue }
-			for line in blob.split(separator: "\n", omittingEmptySubsequences: true) {
-				if title.isEmpty, line.contains("\"ai-title\"") {
-					if let record = try? JSONSerialization.jsonObject(
-						with: Data(line.utf8)) as? [String: Any],
+			guard let blob = try? Data(contentsOf: url) else { continue }
+			for line in blob.split(separator: Needle.newline) {
+				if title.isEmpty, Needle.aiTitle.found(in: line) {
+					if let record = try? JSONSerialization.jsonObject(with: line) as? [String: Any],
 						let found = record["aiTitle"] as? String { title = found }
 				}
-				guard line.contains("\"user\"") || line.contains("\"assistant\"") else { continue }
-				guard let record = try? JSONSerialization.jsonObject(
-					with: Data(line.utf8)) as? [String: Any],
+				guard Needle.user.found(in: line) || Needle.assistant.found(in: line) else { continue }
+				guard let record = try? JSONSerialization.jsonObject(with: line) as? [String: Any],
 					let role = record["type"] as? String,
 					role == "user" || role == "assistant" else { continue }
 
@@ -315,13 +332,10 @@ final class Index {
 		var earliest: [String: (stamp: Double, sid: String)] = [:]
 		for (sid, urls) in Transcripts.grouped() {
 			for url in urls {
-				guard let blob = try? String(contentsOf: url, encoding: .utf8),
-				      blob.contains(".claude/plans/") else { continue }
-				for line in blob.split(separator: "\n") {
-					guard line.contains("\"name\":\"Write\"") else { continue }
-					for id in planIds where line.contains(".claude/plans/\(id).md") {
-						guard let record = try? JSONSerialization.jsonObject(
-							with: Data(line.utf8)) as? [String: Any],
+				guard let blob = try? Data(contentsOf: url), Needle.plans.found(in: blob) else { continue }
+				for line in blob.split(separator: Needle.newline) where Needle.write.found(in: line) {
+					for id in planIds where Needle(".claude/plans/\(id).md").found(in: line) {
+						guard let record = try? JSONSerialization.jsonObject(with: line) as? [String: Any],
 							let stamp = parseStamp(record["timestamp"]) else { continue }
 						if stamp < (earliest[id]?.stamp ?? .greatestFiniteMagnitude) {
 							earliest[id] = (stamp, sid)
@@ -1006,7 +1020,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSTableViewDataSource,
 	var progressSave: DispatchWorkItem?
 	var restyle: DispatchWorkItem?
 	var copiedID: String?
-	let work = DispatchQueue(label: "index")
+	let work = DispatchQueue(label: "index", qos: .userInitiated)
 	var index: Index!
 	var rows: [Session] = []
 	var pending: DispatchWorkItem?
@@ -1019,7 +1033,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSTableViewDataSource,
 		buildMenu()
 		buildWindow()
 		window.subtitle = "Indexing transcripts..."
-		work.async {
+		indexing("Indexing Claude Code transcripts") {
 			self.index = Index()
 			self.index.refresh { done, total in
 				DispatchQueue.main.async { self.window.subtitle = "Indexing \(done) of \(total)..." }
@@ -1037,6 +1051,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSTableViewDataSource,
 	}
 
 	func applicationShouldTerminateAfterLastWindowClosed(_ app: NSApplication) -> Bool { true }
+
+	private func indexing(_ reason: String, _ body: @escaping () -> Void) {
+		work.async { ProcessInfo.processInfo.performActivity(options: .userInitiated, reason: reason, using: body) }
+	}
 
 	private func buildWindow() {
 		window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 1120, height: 720),
@@ -1269,7 +1287,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSTableViewDataSource,
 		store.load()
 		let missing = store.unresolved
 		if !missing.isEmpty {
-			work.async {
+			indexing("Finding the project that wrote each plan") {
 				let found = self.index.writersOf(missing)
 				DispatchQueue.main.async { self.store.applyScan(found); self.reload() }
 			}
@@ -1591,7 +1609,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSTableViewDataSource,
 
 	@objc func rebuild() {
 		window.subtitle = "Rebuilding index..."
-		work.async {
+		indexing("Rebuilding the transcript index") {
 			self.index.db.exec("delete from msgs; delete from sessions;")
 			self.index.refresh { done, total in
 				DispatchQueue.main.async { self.window.subtitle = "Indexing \(done) of \(total)..." }
