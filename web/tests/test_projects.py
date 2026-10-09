@@ -27,3 +27,11 @@ class ArchiveTests(Workspace):
             self.app.set_archived("/nowhere", True)
         with self.assertRaises(ValueError):
             self.app.set_archived("/other", "yes")
+
+
+class FirstArchiveTests(Workspace):
+    def test_archiving_works_before_any_settings_exist(self) -> None:
+        self.app.index.refresh()
+        self.assertFalse(self.paths.sidecar.exists())
+        self.app.set_archived("/other", True)
+        self.assertEqual(self.app.facets()["archived"], ["/other"])

@@ -25,5 +25,6 @@ class ProjectArchive:
         if path not in known_projects():
             raise ValueError(f"Unknown project {path!r}")
         meta = self.sidecar.read()
-        meta["projects"][project_key(meta, path)]["archived"] = archived
+        key = project_key(meta, path)
+        meta["projects"][key]["archived"] = archived
         self.sidecar.write(meta)
