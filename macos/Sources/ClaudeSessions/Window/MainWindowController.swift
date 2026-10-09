@@ -62,7 +62,7 @@ final class MainWindowController: NSWindowController, ToolbarControllerDelegate,
 
 	func present() {
 		window?.makeKeyAndOrderFront(nil)
-		window?.makeFirstResponder(toolbarController.search)
+		toolbarController.focusSearch()
 	}
 
 	func start() {
@@ -164,7 +164,7 @@ final class MainWindowController: NSWindowController, ToolbarControllerDelegate,
 	}
 
 	@objc func focusSearch() {
-		window?.makeFirstResponder(toolbarController.search)
+		toolbarController.focusSearch()
 	}
 
 	@objc func copySelected() {

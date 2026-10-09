@@ -23,6 +23,7 @@ final class ToolbarController: NSObject, NSToolbarDelegate, NSSearchFieldDelegat
 	                              trackingMode: .selectOne, target: nil, action: nil)
 	private var branchNames: [String] = []
 	private var pending: DispatchWorkItem?
+	private var searchItem: NSSearchToolbarItem?
 
 	var query: String { search.stringValue }
 	var role: String { ["", "user", "assistant"][speaker.indexOfSelectedItem] }
@@ -60,6 +61,10 @@ final class ToolbarController: NSObject, NSToolbarDelegate, NSSearchFieldDelegat
 		search.placeholderString = mode == .plans ? "Search plans" : "Search conversations"
 	}
 
+	func focusSearch() {
+		searchItem?.beginSearchInteraction()
+	}
+
 	@objc func filtersChanged() {
 		delegate?.toolbarFiltersDidChange()
 	}
@@ -94,6 +99,7 @@ final class ToolbarController: NSObject, NSToolbarDelegate, NSSearchFieldDelegat
 			search.delegate = self
 			item.searchField = search
 			item.resignsFirstResponderWithCancel = true
+			searchItem = item
 			return item
 		case .speaker:
 			return popupItem(id, speaker, ["Anyone said", "I said", "Claude said"], width: 116)
