@@ -7,9 +7,7 @@ final class TestHome {
 	let project: URL
 
 	init() throws {
-		let canonical = realpath(NSTemporaryDirectory(), nil)!
-		defer { free(canonical) }
-		root = URL(fileURLWithPath: String(cString: canonical)).appendingPathComponent(UUID().uuidString)
+		root = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString)
 		paths = .under(home: root)
 		project = paths.projects.appendingPathComponent("-tmp-demo")
 		try FileManager.default.createDirectory(at: project.appendingPathComponent("aaa/subagents"),

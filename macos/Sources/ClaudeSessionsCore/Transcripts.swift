@@ -13,7 +13,7 @@ public struct Transcripts {
 		guard let walker = FileManager.default.enumerator(at: root, includingPropertiesForKeys: keys)
 		else { return groups }
 		for case let url as URL in walker where url.pathExtension == "jsonl" {
-			let parts = url.pathComponents.suffix(from: root.pathComponents.count)
+			let parts = url.pathComponents.suffix(walker.level)
 			guard parts.count >= 2 else { continue }
 			let sid = parts[parts.startIndex + 1].replacingOccurrences(of: ".jsonl", with: "")
 			groups[sid, default: []].append(url)

@@ -85,3 +85,16 @@ struct SessionIndexTests {
 		#expect(home.index().writersOf(["alpha", "beta"]) == ["alpha": "/tmp/demo"])
 	}
 }
+
+struct SymlinkedHomeTests {
+	@Test func sessionsAreFoundThroughASymlinkedFolder() throws {
+		let home = try TestHome()
+		let link = home.root.deletingLastPathComponent().appendingPathComponent(UUID().uuidString)
+		try FileManager.default.createSymbolicLink(at: link, withDestinationURL: home.root)
+		defer { try? FileManager.default.removeItem(at: link) }
+		let index = SessionIndex(paths: .under(home: link))
+		#expect(index.refresh() == 2)
+		#expect(Set(index.search(query: "", role: "", project: "", hidden: [], branch: "", days: [], sort: 0).map(\.id)) == ["aaa", "bbb"])
+		#expect(index.transcripts.mainTranscript(of: "aaa")?.lastPathComponent == "aaa.jsonl")
+	}
+}
